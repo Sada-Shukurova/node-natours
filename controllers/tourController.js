@@ -23,6 +23,15 @@ import Tour from '../models/tourModel.js';
 //   next();
 // }
 
+// MIDDLEWARE ALIAS
+
+export const aliasTopTours = (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = '-ratingsAverage,price';
+  req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+  next();
+};
+
 export async function getAllTours(req, res) {
   try {
     // console.log(req.query);

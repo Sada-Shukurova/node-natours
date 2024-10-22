@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  aliasTopTours,
   createTour,
   deleteTourById,
   getAllTours,
@@ -18,6 +19,8 @@ const router = express.Router();
 
 // router.param('id', checkId);
 // check body middleware
+
+router.route('/top-5-cheap').get(aliasTopTours, getAllTours);
 
 router.route('/').get(getAllTours).post(createTour);
 
