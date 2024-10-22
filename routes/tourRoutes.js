@@ -5,6 +5,7 @@ import {
   deleteTourById,
   getAllTours,
   getTourById,
+  getTourStats,
   updateTourById,
 } from '../controllers/tourController.js';
 
@@ -21,6 +22,7 @@ const router = express.Router();
 // check body middleware
 
 router.route('/top-5-cheap').get(aliasTopTours, getAllTours);
+router.route('/tour-stats').get(getTourStats);
 
 router.route('/').get(getAllTours).post(createTour);
 
