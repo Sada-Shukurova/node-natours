@@ -1,3 +1,10 @@
+import AppError from '../utils/appError.js';
+
+const handleCastErrorDB = (err) => {
+  const message = `Invalid ${err.path}: ${err.value}`;
+  return new AppError(message, 400);
+};
+
 // ERROR HANDLING MIDDLEWARE
 
 const sendErrorDev = (err, res) => {
@@ -32,6 +39,9 @@ export default (err, req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
     sendErrorDev(err, res);
   } else if (process.env.NODE_ENV === 'production') {
-    sendErrorProd(err, res);
+    let errCopy = { ...err };
+    if (err.name === 'CastError') errCopy = handleCastErrorDB(errCopy);
+
+    sendErrorProd(errCopy, res);
   }
 };
