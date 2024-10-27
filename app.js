@@ -2,6 +2,8 @@ import express from 'express';
 import morgan from 'morgan';
 import tourRouter from './routes/tourRoutes.js';
 import userRouter from './routes/userRoutes.js';
+import AppError from './utils/appError.js';
+import globalErrorHandler from './controllers/errorController.js';
 
 export const app = express();
 
@@ -42,24 +44,19 @@ app.use('/api/v1/users', userRouter);
 // });
 
 // unhandled routes with error handling middleware
-app.all('*', (req, res, next) => {
-  const err = new Error(`Can't find ${req.originalUrl} on this server`);
-  err.status = 'fail';
-  err.statusCode = 404;
+// app.all('*', (req, res, next) => {
+//   const err = new Error(`Can't find ${req.originalUrl} on this server`);
+//   err.status = 'fail';
+//   err.statusCode = 404;
 
-  next(err);
+//   next(err);
+// });
+
+//BETTER ERROR HANDLLING WITH CLASS ERROR HANDLER MIDDLEWARE
+app.all('*', (req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this server😥😞`, 404));
 });
 
 //#endregion
 
-// ERROR HANDLING MIDDLEWARE
-
-app.use((err, req, res, next) => {
-  err.statusCode = err.statusCode || 500;
-  err.status = err.status || 'error';
-
-  res.status(err.statusCode).json({
-    status: err.status,
-    message: err.message,
-  });
-});
+app.use(globalErrorHandler);
