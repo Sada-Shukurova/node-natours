@@ -1,11 +1,17 @@
 import AppError from '../utils/appError.js';
 
+// CAST ERRORS
 const handleCastErrorDB = (err) => {
   const message = `Invalid ${err.path}: ${err.value}`;
   return new AppError(message, 400);
 };
 
-// ERROR HANDLING MIDDLEWARE
+// DUPLICATE FIELDS ERROR
+const handleDuplicateFieldsDB = (err) => {
+  const value = err.errmsg.match(/(["'])(.*?)\1/)[0];
+  const message = `Duplicate field value: ${value}. Please use another`;
+  return new AppError(message, 400);
+};
 
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
@@ -31,6 +37,7 @@ const sendErrorProd = (err, res) => {
   }
 };
 
+// ERROR HANDLING MIDDLEWARE
 export default (err, req, res, next) => {
   // console.log(err.stack);
 
@@ -39,8 +46,10 @@ export default (err, req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
     sendErrorDev(err, res);
   } else if (process.env.NODE_ENV === 'production') {
-    let errCopy = { ...err };
-    if (err.name === 'CastError') errCopy = handleCastErrorDB(errCopy);
+    let errCopy = { ...err, errmsg: err.errmsg };
+
+    if (errCopy.name === 'CastError') errCopy = handleCastErrorDB(errCopy);
+    if (errCopy.code === 11000) errCopy = handleDuplicateFieldsDB(errCopy);
 
     sendErrorProd(errCopy, res);
   }
