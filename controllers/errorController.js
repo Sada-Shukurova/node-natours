@@ -13,6 +13,14 @@ const handleDuplicateFieldsDB = (err) => {
   return new AppError(message, 400);
 };
 
+// VALIDATION ERRROR
+const handleValidationErrorDB = (err) => {
+  const errors = Object.values(err.errors).map((el) => el.message);
+  const message = `Invalid input data.${errors.join('. ')}`;
+  return new AppError(message, 400);
+};
+
+// DEVELOPMENT ERROR
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
@@ -21,6 +29,8 @@ const sendErrorDev = (err, res) => {
     stack: err.stack,
   });
 };
+
+// PRODUCTION ERROR
 const sendErrorProd = (err, res) => {
   if (err.isOperational) {
     res.status(err.statusCode).json({
@@ -46,10 +56,13 @@ export default (err, req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
     sendErrorDev(err, res);
   } else if (process.env.NODE_ENV === 'production') {
-    let errCopy = { ...err, errmsg: err.errmsg };
+    // let errCopy = { ...err, errmsg: err.errmsg };
+    let errCopy = JSON.parse(JSON.stringify(err));
 
     if (errCopy.name === 'CastError') errCopy = handleCastErrorDB(errCopy);
     if (errCopy.code === 11000) errCopy = handleDuplicateFieldsDB(errCopy);
+    if (errCopy.name === 'ValidationError')
+      errCopy = handleValidationErrorDB(errCopy);
 
     sendErrorProd(errCopy, res);
   }
