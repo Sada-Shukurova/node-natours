@@ -7,8 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon ./server.js",
-    "start:prod": "NODE_ENV=production nodemon server.js",
-    "debug": "ndb ./server.js"
+    "start:prod": "cross-env NODE_ENV=production nodemon ./server.js",
+    "debug": "ndb ./server"
   },
   "author": "Sada Shukurova",
   "license": "ISC",
@@ -19,5 +19,8 @@
     "morgan": "^1.10.0",
     "slugify": "^1.6.6",
     "validator": "^13.12.0"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
   }
 }
