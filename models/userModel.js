@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import validator from 'validator';
+import validator, { trim } from 'validator';
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -17,12 +17,16 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     validate: [validator.isEmail, 'Please provide a valid email'],
   },
-  photo: String,
+  photo: {
+    type: String,
+    trim: true,
+  },
 
   password: {
     type: String,
     required: [true, 'Please provide a password'],
     minlength: [8, 'A password must have more or equal than 8 characters'],
+    trim: true,
     // will add some more fields
     // match: [
     //   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
@@ -32,6 +36,7 @@ const userSchema = new mongoose.Schema({
   passwordConfirm: {
     type: String,
     required: [true, 'Please confirm you parrword'],
+    trim: true,
     // validate: {
     //   validator: function (value) {
     //     return value === this.password;
