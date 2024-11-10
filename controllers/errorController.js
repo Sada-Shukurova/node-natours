@@ -19,6 +19,13 @@ const handleValidationErrorDB = (err) => {
   const message = `Invalid input data.${errors.join('. ')}`;
   return new AppError(message, 400);
 };
+//JWT Webtoken Error
+const handleJWTError = () => {
+  return new AppError('Invalid token. Please log in again', 401);
+};
+// JWT token expired error
+const handleJWTExpiredError = () =>
+  new AppError('Your token has expired. Please log in again', 401);
 
 // DEVELOPMENT ERROR
 const sendErrorDev = (err, res) => {
@@ -63,6 +70,8 @@ export default (err, req, res, next) => {
     if (errCopy.code === 11000) errCopy = handleDuplicateFieldsDB(errCopy);
     if (errCopy.name === 'ValidationError')
       errCopy = handleValidationErrorDB(errCopy);
+    if (errCopy.name === 'JsonWebTokenError') errCopy = handleJWTError();
+    if (errCopy.name === 'TokenExpiredError') errCopy = handleJWTExpiredError();
 
     sendErrorProd(errCopy, res);
   }
