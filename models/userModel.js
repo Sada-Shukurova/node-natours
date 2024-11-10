@@ -35,6 +35,7 @@ const userSchema = new mongoose.Schema({
     //   'Password must contain at least one lowercase letter, one uppercase letter, and one number',
     // ],
   },
+  passwordChangedAt: Date,
   passwordConfirm: {
     type: String,
     required: [true, 'Please confirm you parrword'],
@@ -47,6 +48,7 @@ const userSchema = new mongoose.Schema({
       message: 'Passwords do not match',
     },
   },
+
   //   createdAt: {
   //     type: Date,
   //     default: Date.now(),
@@ -66,6 +68,19 @@ userSchema.methods.correctPassword = async function (
   userPassword
 ) {
   return await bcrypt.compare(candidatePassword, userPassword);
+};
+//if password changed
+userSchema.methods.changedPasswordAfter = function (JWTTimestmp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    // console.log(changedTimestamp, JWTTimestmp);
+    return JWTTimestmp < changedTimestamp;
+  }
+  // not changed password
+  return false;
 };
 
 const User = mongoose.model('User', userSchema);

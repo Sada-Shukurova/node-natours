@@ -1,7 +1,9 @@
+import { promisify } from 'util';
 import User from '../models/userModel.js';
 import AppError from '../utils/appError.js';
 import catchAsync from '../utils/catchAsync.js';
 import jwt from 'jsonwebtoken';
+import { log } from 'console';
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -15,6 +17,7 @@ export const signup = catchAsync(async (req, res, next) => {
     email: req.body.email,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
+    passwordChangedAt: req.body.passwordChangedAt,
   });
 
   const token = signToken(newUser._id);
@@ -67,12 +70,25 @@ export const protect = catchAsync(async (req, res, next) => {
       new AppError('You are not logged in! Please log in to get access', 401)
     );
   }
-  console.log(token);
+  // console.log(token);
   //verification token
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  // console.log(decoded);
 
   //if ok check if the user exists
-
-  //check if user changed passwort after token issued
+  const currentUser = await User.findById(decoded.id);
+  if (!currentUser)
+    return next(
+      new AppError('The user belonging to this token no longer exists!', 401)
+    );
+  //check if user changed password after token issued
+  if (currentUser.changedPasswordAfter(decoded.iat)) {
+    return next(
+      new AppError('User recently changed password! Please log in again!', 401)
+    );
+  }
+  //GRANT access to protected route
+  req.user = currentUser;
 
   next();
 });
